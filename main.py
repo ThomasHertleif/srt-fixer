@@ -34,7 +34,7 @@ def read_srt(text_file):
             srt_block = {}
             state = "start"
         else:
-            raise ValueError("dafuq")
+            raise ValueError("Error while parsing srt input.")
     return
 
 
@@ -78,22 +78,35 @@ def print_as_srt(srt_blocks):
         index += 1
         print(print_srt_block(block, index))
 
+def export_as_srt(srt_blocks, output):
+    index = 0
+    new_srt_file = open(output, "w")
+    for block in srt_blocks:
+        index += 1
+        new_srt_file.write(print_srt_block(block, index))
+        new_srt_file.write("\n")
+    
+    new_srt_file.close
+
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description='Fix them SRT filez')
-    parser.add_argument('input', help='The input file')
+    parser = argparse.ArgumentParser(description='Fix overlaping timestamps in SRT files by merging them.')
+    parser.add_argument('input', help='The input file.')
+    parser.add_argument('-o', help='Define a output file. If no file is given text will be printed to console.')
     args = parser.parse_args()
 
     try:
         text = open(args.input, "r")
     except IOError:
-        raise ValueError("{} is no file, bro".format(args.input))
+        raise ValueError("{} is no file.".format(args.input))
 
     with text:
         srt_blocks = read_srt(text)
         merged = merge_overlapping(srt_blocks)
-        print_as_srt(merged)
-
+        if args.o is None:
+            print_as_srt(merged)
+        else:
+            export_as_srt(merged, args.o)
 
 if __name__ == '__main__':
     main()
